@@ -8,12 +8,12 @@ noise::module::Perlin perlin;
 const int WIDTH = 1200;
 const int HEIGHT = 800;
 
-glm::vec3 viewPos = glm::vec3(50, 1, 50);
+glm::vec3 viewPos = glm::vec3(50, 0, 50);
 float zoom = 0.1;
 float zoomInc = 0.001;
 float rotation = 0.0f;
-glm::vec3 cameraPos = glm::vec3(50, 50, 50);
-glm::vec3 lookPos = glm::vec3(0, 5, 0);
+glm::vec3 cameraPos = glm::vec3(50, 60, 50);
+glm::vec3 lookPos = glm::vec3(0, 10, 0);
 glm::mat4 camera = glm::lookAt(cameraPos, lookPos, glm::vec3(0,1,0));
 glm::mat4 projection = glm::ortho(-(float)WIDTH*zoom, (float)WIDTH*zoom, -(float)HEIGHT*zoom, (float)HEIGHT*zoom, -800.0f, 500.0f);
 

@@ -13,36 +13,32 @@ uniform mat4 model;
 uniform mat4 vp;
 uniform mat4 dbmvp;
 
-// We output the ex_Color variable to the next shader in the chain
-//out vec4 ex_Color;
-out vec3 ex_Model;
-out vec3 ex_Normal;
-//out vec2 ex_Position;
-out vec4 ex_Shadow;
-flat out float ex_Cloud;
-/*
-vec4 gouraud(){
-	//Color Calculations - Per Vertex! Not Fragment.
-	float diffuse = clamp(dot(in_Normal, normalize(lightPos)), 0.1, 0.9);
-	float ambient = 0.1;
-	float spec = 0.8*pow(max(dot(normalize(lookDir), normalize(reflect(lightPos, in_Normal))), 0.0), 32.0);
-
-	return vec4(lightCol*lightStrength*(diffuse + ambient + spec), 1.0f);
-}
-*/
+out vdata{
+	flat float cloud;
+	vec3 normal;
+	vec4 shadow;
+	vec3 model;
+} exv;
 
 uniform float sealevel;
+uniform bool cloudpass;
 
 void main(void) {
-	ex_Cloud = in_Cloud;
-	//vec3 inPos = in_Position;
-	ex_Model = (model * vec4(in_Position, 1.0f)).xyz;
-	if(ex_Model.y < sealevel*15)
-		ex_Model.y = sealevel*15;
+	exv.cloud = in_Cloud;
+	exv.model = (model * vec4(in_Position, 1.0f)).xyz;
 
-	ex_Normal = in_Normal;
-	ex_Shadow = dbmvp * vec4(ex_Model, 1.0f);
-	gl_Position = vp * vec4(ex_Model, 1.0f);
+	if(exv.model.y < sealevel*15){
+		exv.model.y = sealevel*15;
+
+	}
+
+		if(cloudpass)
+			exv.model.y += 5.0;
+
+
+	exv.normal = in_Normal;
+	exv.shadow= dbmvp * vec4(exv.model, 1.0f);
+	gl_Position = vp * vec4(exv.model, 1.0f);
 
 	//ex_Color = in_Color;
 	//ex_Position = ((gl_Position.xyz / gl_Position.w).xy * 0.5 + 0.5 );

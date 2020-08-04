@@ -8,29 +8,33 @@ uniform float lightStrength = 0.2;
 //Sampler for the ShadowMap
 uniform sampler2D shadowMap;
 
-//IO
-//in vec4 ex_Color;
-in vec3 ex_Normal;
-//in vec2 ex_Position;
-in vec4 ex_Shadow;
-in vec3 ex_Model;
+in vdata2{
+	flat float cloud;
+	vec3 normal;
+	vec4 shadow;
+	vec3 model;
+  vec3 y;
+} exg;
+
 out vec4 fragColor;
 
 int viewmode = 0;
+
+uniform bool cloudpass;
 
 //Sample a grid..
 float gridSample(int size){
   //Stuff
   float shadow = 0.0;
-  float currentDepth = ex_Shadow.z;
+  float currentDepth = exg.shadow.z;
 
   //Compute Bias
-  float m = 1-dot(ex_Normal, normalize(lightPos));
+  float m = 1-dot(exg.normal, normalize(lightPos));
   float bias = mix(0.002, 0.2*m, pow(m, 5));
 
   for(int x = -size; x <= size; ++x){
       for(int y = -size; y <= size; ++y){
-          float pcfDepth = texture(shadowMap, ex_Shadow.xy + vec2(x, y) / textureSize(shadowMap, 0)).r;
+          float pcfDepth = texture(shadowMap, exg.shadow.xy + vec2(x, y) / textureSize(shadowMap, 0)).r;
           shadow += currentDepth - 0.001 > pcfDepth ? 1.0 : 0.0;
       }
   }
@@ -42,7 +46,7 @@ float gridSample(int size){
 vec4 shade(){
     //Shadow Value
     float shadow = 0.0;
-    if(greaterThanEqual(ex_Shadow.xy, vec2(0.0f)) == bvec2(true) && lessThanEqual(ex_Shadow.xy, vec2(1.0f)) == bvec2(true))
+    if(greaterThanEqual(exg.shadow.xy, vec2(0.0f)) == bvec2(true) && lessThanEqual(exg.shadow.xy, vec2(1.0f)) == bvec2(true))
       shadow = gridSample(1);
 
     //Sample the Shadow Value from Texture
@@ -50,9 +54,9 @@ vec4 shade(){
 }
 
 vec4 phong(){
-  float diffuse = 2*max(dot(ex_Normal, normalize(lightPos)), 0.0);
+  float diffuse = 2*max(dot(exg.normal, normalize(lightPos)), 0.0);
   float ambient = 0.2;
-  float spec = pow(max(dot(normalize(lookDir), reflect(lightPos, ex_Normal)), 0.0), 32.0);
+  float spec = pow(max(dot(normalize(lookDir), reflect(lightPos, exg.normal)), 0.0), 4.0);
   spec = 0.01 * spec;
 
   vec3 color = vec3(1);
@@ -61,26 +65,22 @@ vec4 phong(){
 
 vec3 flatColor = vec3(0.40, 0.60, 0.25);
 vec3 waterColor = vec3(0.17, 0.40, 0.44);
+vec3 deepColor = vec3(0.17, 0.3, 0.3);
 
 uniform float sealevel;
 
-flat in float ex_Cloud;
-
 void main(void) {
 
-  if(ex_Model.y <= sealevel*15)
-    fragColor = shade()*vec4(waterColor, 1.0);//phong()*vec4(color, 1.0);
+  if(exg.model.y <= sealevel*15)
+    fragColor = shade()*vec4(mix(waterColor,deepColor,0), 1.0);//phong()*vec4(color, 1.0);
   else
     fragColor = shade()*phong()*vec4(flatColor, 1.0);//phong()*vec4(color, 1.0);
 
-    fragColor = mix(fragColor, vec4(1), ex_Cloud);//vec4(vec3(ex_Cloud), 1.0);
+  fragColor = mix(fragColor, vec4(vec3(0), 1), exg.cloud);//vec4(vec3(ex_Cloud), 1.0);
 
-  if(length(ex_Model.xz) > 49 )
+  if(length(exg.model.xz) > 49 )
     discard;
 
-
-//  if(viewmode == 1) //Normal Colors
-  //  fragColor = vec4(ex_Normal, 1.0);
-//  else{
-//  }
+	if(cloudpass)
+		fragColor = vec4(vec3(1), exg.cloud);
 }

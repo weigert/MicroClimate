@@ -61,6 +61,7 @@ SparseMatrix<double> DMAT;
 void Field::initialize(){
   srand(time(NULL));
   SEED = rand();
+  std::cout<<SEED<<std::endl;
 
   //Height Map Generation
   noise::module::Perlin perlin;
@@ -80,7 +81,7 @@ void Field::initialize(){
   double hmin = height.minCoeff();
   double hmax = height.maxCoeff();
   height = (height - hmin*E)/(hmax - hmin);
-  sealevel = 1.02*height.mean();
+  sealevel = 1.05*height.mean();
 
   //Compute the Boundary
   bc = ArrayXd::Zero(SIZE*SIZE);

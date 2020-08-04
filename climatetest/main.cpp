@@ -44,7 +44,7 @@ int main( int argc, char* args[] ) {
 	*/
 
 	//Setup Shaders
-	Shader shader({"shader/default.vs", "shader/default.fs"}, {"in_Position", "in_Normal", "in_Color", "in_Cloud"});
+	Shader shader({"shader/default.vs", "shader/default.gs", "shader/default.fs"}, {"in_Position", "in_Normal", "in_Color", "in_Cloud"});
 	Shader depth({"shader/depth.vs", "shader/depth.fs"}, {"in_Position"});
 
 	//Setup Rendering Billboards
@@ -53,7 +53,7 @@ int main( int argc, char* args[] ) {
 	Square2D flat;
 
 	Model model(constructor, field.height.data());
-	model.shift(glm::vec3(-50, -100, -50));				//Translate Mesh
+	model.shift(glm::vec3(-50, -150, -50));				//Translate Mesh
 
 	//Cloud Vector!
 	Eigen::ArrayXf cloud;
@@ -77,9 +77,10 @@ int main( int argc, char* args[] ) {
     model.render(GL_TRIANGLES);       //Render Model
 
     //Regular Image
-		Tiny::view.target(glm::vec4(0,0,0,1));    //Prepare Target
+		Tiny::view.target(glm::vec3(0.8,1.0,1.0));    //Prepare Target
 
 	  shader.use();                   //Prepare Shader
+		shader.uniform("cloudpass", false);
     shader.texture("shadowMap", shadow.depth);
     shader.uniform("lightPos", lightPos);
     shader.uniform("lookDir", lookPos-cameraPos);
@@ -90,6 +91,10 @@ int main( int argc, char* args[] ) {
     shader.uniform("dbmvp", biasMatrix * depthProjection * depthCamera * glm::mat4(1.0f));
     shader.uniform("model", model.model);
     model.render(GL_TRIANGLES);    //Render Model
+
+		//Change a single boolean
+		shader.uniform("cloudpass", true);
+		model.render(GL_TRIANGLES);    //Render Model
 
 	};
 
@@ -109,7 +114,7 @@ int main( int argc, char* args[] ) {
 
 		if(!paused){
 
-			std::cout<<t++<<std::endl;
+			camera = glm::rotate(camera, glm::radians(0.2f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 				field.timestep();
 				cloud = (source::CLOUD(field.humidity, field.P, field.temperature, 100.0)).cast<float>();
@@ -122,8 +127,6 @@ int main( int argc, char* args[] ) {
 						}
 					}
 				}
-
-				std::cout<<model.positions.size()/true_cloud.size()<<std::endl;
 
 				//This is a thing...
 
