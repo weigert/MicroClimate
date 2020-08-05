@@ -76,7 +76,7 @@ void main(void) {
   else
     fragColor = shade()*phong()*vec4(flatColor, 1.0);//phong()*vec4(color, 1.0);
 
-  fragColor = mix(fragColor, vec4(vec3(0), 1), exg.cloud);//vec4(vec3(ex_Cloud), 1.0);
+  fragColor = mix(fragColor, vec4(vec3(0), 1), 0.8*exg.cloud);//vec4(vec3(ex_Cloud), 1.0);
 
   if(length(exg.model.xz) > 49 )
     discard;

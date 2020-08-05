@@ -43,7 +43,7 @@ namespace source{
     Z += 1000.0*k*(DP.cwiseMin(thresh)-E*thresh);
 
     //Boundary Volume Not Height Difference... (Increase proportionally to the temperature...)
-    Z -= 50.0*0.5*(vX.cwiseProduct((PDE::GXF+PDE::GXB)*height.cwiseMax(s)) + vY.cwiseProduct((PDE::GYF+PDE::GYB)*height.cwiseMax(s))).array();
+    Z -= 30.0*0.5*(vX.cwiseProduct((PDE::GXF+PDE::GXB)*height.cwiseMax(s)) + vY.cwiseProduct((PDE::GYF+PDE::GYB)*height.cwiseMax(s))).array();
 
     //Radiation Transfer (Get Albedo and Radiation Balance Steady State T)
     Z += 0.1*(10*E + 15*G - T.array())*(E-CLOUD(H, P, T, 250.0));

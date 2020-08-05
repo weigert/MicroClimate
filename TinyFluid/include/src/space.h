@@ -1,19 +1,6 @@
-/*
-Author: Nicholas McDonald
-
-Spatial Discretization Approximations and Helpers!
-
-*/
-
-#include <math.h>
-
+//Spatial Discretization
 namespace space{
-
-/*
-================================================================================
-                              MAIN LINALG HELPERS
-================================================================================
-*/
+using namespace Eigen;
 
 //Factorial Calculator
 double fac(int k){
@@ -33,7 +20,7 @@ double taylor(double x, double a, int n){
 
     - Interpolators   (i.e. lagrange polynomials)
     - Differentiators (i.e. finite differences)
-    - Integrators     (i.e. numerical quadrature)
+    - Integrators     (i.e. numerical quadrature) - not implemented at the moment
 
   As they are linearizations, they can be put into general matrix form after
   the individual operator weights have been computed.
@@ -117,8 +104,8 @@ std::vector<double> FD(std::initializer_list<double> points, unsigned int order)
     Currently this handles ONLY periodic boundary conditions.
 */
 
-Eigen::SparseMatrix<double> OP(std::initializer_list<double> _p, std::vector<double> w, glm::ivec2 dim){
-  Eigen::SparseMatrix<double> M(SIZE*SIZE, SIZE*SIZE);
+Eigen::SparseMatrix<double,RowMajor> OP(std::initializer_list<double> _p, std::vector<double> w, glm::ivec2 dim){
+  Eigen::SparseMatrix<double,RowMajor> M(SIZE*SIZE, SIZE*SIZE);
   std::vector<triplet> list;
   std::vector<double> p = _p;
 
@@ -145,39 +132,39 @@ Eigen::SparseMatrix<double> OP(std::initializer_list<double> _p, std::vector<dou
 */
 
 //Interpolate the surface values linearly on both faces in a direction!
-Eigen::SparseMatrix<double> FV_FLUX(glm::vec2 dim){
+Eigen::SparseMatrix<double,RowMajor> FV_FLUX(glm::vec2 dim){
   std::vector<double> w = LI({-0.5, 0.5});
   return OP({0, 1}, w, dim) -  OP({0, -1}, w, dim);
 }
 
 //1st Order Accurate Forward Finite Differences, Differential at Boundary for
 //both surfaces in a direction summed up!
-Eigen::SparseMatrix<double> FV_DIFFUSION(glm::vec2 dim){
+Eigen::SparseMatrix<double,RowMajor> FV_DIFFUSION(glm::vec2 dim){
   std::vector<double> w1 = FD({0, 1}, 1);
   std::vector<double> w2 = FD({0, -1}, 1);
   return OP({0, 1}, w1, dim) -  OP({0, -1}, w2, dim);
 }
 
 //4th Order Accurate Centered Differences, Approximation of Nth order Derivative
-Eigen::SparseMatrix<double> CFD(glm::vec2 dim, int n){
+Eigen::SparseMatrix<double,RowMajor> CFD(glm::vec2 dim, int n){
   std::vector<double> w = FD({-2, -1, 0, 1, 2}, n);
   return OP({-2, -1, 0, 1, 2}, w, dim);
 }
 
 //Forward Finite Differences
-Eigen::SparseMatrix<double> FFD(glm::vec2 dim, int n){
+Eigen::SparseMatrix<double,RowMajor> FFD(glm::vec2 dim, int n){
   std::vector<double> w = FD({0, 1}, n);
   return OP({0, 1}, w, dim);
 }
 
 //Forward Finite Differences
-Eigen::SparseMatrix<double> BFD(glm::vec2 dim, int n){
+Eigen::SparseMatrix<double,RowMajor> BFD(glm::vec2 dim, int n){
   std::vector<double> w = FD({0, 1}, n);
   return OP({-1, 0}, w, dim);
 }
 
 //Forward Finite Differences
-Eigen::SparseMatrix<double> SFD(glm::vec2 dim, int n){
+Eigen::SparseMatrix<double,RowMajor> SFD(glm::vec2 dim, int n){
   std::vector<double> w = FD({-1, 0, 1}, n);
   return OP({-1, 0, 1}, w, dim);
 }

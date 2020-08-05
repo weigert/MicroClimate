@@ -1,16 +1,21 @@
 #include "TinyEngine/TinyEngine.h"
 
 #define SIZE 100
+#include "TinyFluid/TinyFluid.h"
 
-#include "../procfluid/procfluid.h"
-#include "terrain.h"
-#include "model.h"
+#include "include/source.h"
+#include "include/terrain.h"
+#include "include/model.h"
 
 int main( int argc, char* args[] ) {
 
 	//Initialize a Window
 	Tiny::view.vsync = false;
 	Tiny::window("TinyFluid Climate Test", 1200, 800);
+
+	int n = 8;
+	omp_set_num_threads(n);
+	Eigen::setNbThreads(n);
 
 	bool paused = true;
 
@@ -53,10 +58,12 @@ int main( int argc, char* args[] ) {
 	Square2D flat;
 
 	Model model(constructor, field.height.data());
-	model.shift(glm::vec3(-50, -150, -50));				//Translate Mesh
+	model.shift(glm::vec3(-SIZE/2, -150, -SIZE/2));				//Translate Mesh
 
 	//Cloud Vector!
 	Eigen::ArrayXf cloud;
+
+	//std::cout<<"Threads Allocated: "<<Eigen::nbThreads()<<std::endl;
 
 	//Add Climate System Attributes
 	model.addBuffers(1);
@@ -110,13 +117,17 @@ int main( int argc, char* args[] ) {
 		//Compute Relevant Rendering Quantities
 		//clouds2 = source::CLOUD(field.humidity, field.P, field.temperature, 150.0);
 
-	//	timer::benchmark<std::chrono::microseconds>([&](){
 
 		if(!paused){
 
 			camera = glm::rotate(camera, glm::radians(0.2f), glm::vec3(0.0f, 1.0f, 0.0f));
 
+			timer::benchmark<std::chrono::microseconds>([&](){
+
 				field.timestep();
+
+			});
+
 				cloud = (source::CLOUD(field.humidity, field.P, field.temperature, 100.0)).cast<float>();
 				true_cloud.clear();
 
@@ -138,8 +149,6 @@ int main( int argc, char* args[] ) {
 				glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, 0, 0);
 
 		}
-
-	//	});
 
 	});
 
